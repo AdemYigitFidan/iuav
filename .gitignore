@@ -1,0 +1,41 @@
+# colcon / ROS 2
+build/
+install/
+log/
+
+# C++ / CMake
+*.o
+*.a
+*.so
+CMakeCache.txt
+CMakeFiles/
+compile_commands.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Editörler
+.vscode/
+.idea/
+*.swp
+
+# Uçuş logları, veri seti ve büyük dosyalar -> Drive
+*.bin
+*.tlog
+*.ulg
+*.mp4
+*.mov
+*.bag
+*.db3
+datasets/
+runs/
+*.pt
+*.onnx
+*.hef
+
+# İşletim sistemi
+.DS_Store
+Thumbs.db
