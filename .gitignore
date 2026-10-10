@@ -1,41 +1,20 @@
-# colcon / ROS 2
+# ArduPilot SITL / MAVProxy output (created in the folder sim_vehicle.py runs from)
+eeprom.bin
+mav.parm
+mav.tlog
+mav.tlog.raw
+logs/
+terrain/
+
+# colcon / ROS 2 build output
 build/
 install/
 log/
 
-# C++ / CMake
-*.o
-*.a
-*.so
-CMakeCache.txt
-CMakeFiles/
-compile_commands.json
-
 # Python
 __pycache__/
 *.pyc
-.venv/
-venv/
 
-# Editörler
+# Editors
 .vscode/
 .idea/
-*.swp
-
-# Uçuş logları, veri seti ve büyük dosyalar -> Drive
-*.bin
-*.tlog
-*.ulg
-*.mp4
-*.mov
-*.bag
-*.db3
-datasets/
-runs/
-*.pt
-*.onnx
-*.hef
-
-# İşletim sistemi
-.DS_Store
-Thumbs.db
