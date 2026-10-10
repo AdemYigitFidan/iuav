@@ -1,5 +1,12 @@
 <?xml version="1.0" ?>
 <sdf version="1.9">
+  <!-- iuav competition field (based on ardupilot_gazebo iris_runway).
+       ENU frame: x = east, y = north. Drone starts at (0, 0).
+       Rules (TEKNOFEST 2026, rotary-wing):
+         - Mission 1: figure-eight around two poles (planned 150 m apart)
+         - Mission 2: blue hexagon (side 2 m) + red triangle (side 1 m)
+         - Fixed-wing targets on the same field must NOT be detected:
+           4x4 m blue square, 2x2 m red square -->
   <world name="iuav_field">
     <physics name="1ms" type="ignore">
       <max_step_size>0.001</max_step_size>
@@ -33,6 +40,7 @@
       <sky></sky>
     </scene>
 
+    <!-- Location: ArduPilot CMAC test site (Canberra). Must match scripts/run_sitl.sh -->
     <spherical_coordinates>
       <latitude_deg>-35.363262</latitude_deg>
       <longitude_deg>149.165237</longitude_deg>
@@ -55,6 +63,8 @@
       <direction>-0.5 0.1 -0.9</direction>
     </light>
 
+    <!-- Axes at the origin (red = x/east, green = y/north, blue = z/up), 10 m each.
+         Also carries the navsat sensor. -->
     <model name="axes">
       <static>1</static>
       <link name="link">
@@ -109,30 +119,56 @@
         </sensor>
       </link>
     </model>
-    
+
+    <!-- Ground with runway (from ardupilot_gazebo) -->
     <include>
       <uri>model://runway</uri>
       <pose degrees="true">-29 545 0 0 0 363</pose>
     </include>
 
-    <!-- Target 1: blue regular hexagon, side 2 m -->
-    <model name="target_hexagon">
+    <!-- ===================== Mission 1: poles ===================== -->
+    <!-- 150 m apart (planned distance in the rules), 30 m south of the start.
+         Height is not given in the rules; 8 m like last year's world. -->
+    <model name="pole_1">
       <static>true</static>
-      <pose>20 0 0.01 0 0 0</pose>
+      <pose>-75 -30 4 0 0 0</pose>
       <link name="link">
         <collision name="collision">
-          <geometry>
-            <polyline>
-              <point>2 0</point>
-              <point>1 1.732</point>
-              <point>-1 1.732</point>
-              <point>-2 0</point>
-              <point>-1 -1.732</point>
-              <point>1 -1.732</point>
-              <height>0.02</height>
-            </polyline>
-          </geometry>
+          <geometry><cylinder><radius>0.1</radius><length>8</length></cylinder></geometry>
         </collision>
+        <visual name="visual">
+          <geometry><cylinder><radius>0.1</radius><length>8</length></cylinder></geometry>
+          <material>
+            <ambient>0.9 0.45 0.05 1</ambient>
+            <diffuse>0.9 0.45 0.05 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="pole_2">
+      <static>true</static>
+      <pose>75 -30 4 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><cylinder><radius>0.1</radius><length>8</length></cylinder></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><cylinder><radius>0.1</radius><length>8</length></cylinder></geometry>
+          <material>
+            <ambient>0.9 0.45 0.05 1</ambient>
+            <diffuse>0.9 0.45 0.05 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ===================== Mission 2: targets ===================== -->
+    <!-- Blue regular hexagon, side 2 m (4 m corner to corner). Payload lands on it -> has collision. -->
+    <model name="target_hexagon">
+      <static>true</static>
+      <pose>20 0 0.003 0 0 0</pose>
+      <link name="link">
         <visual name="visual">
           <geometry>
             <polyline>
@@ -142,7 +178,7 @@
               <point>-2 0</point>
               <point>-1 -1.732</point>
               <point>1 -1.732</point>
-              <height>0.02</height>
+              <height>0.005</height>
             </polyline>
           </geometry>
           <material>
@@ -154,21 +190,11 @@
       </link>
     </model>
 
-    <!-- Target 2: red equilateral triangle, side 1 m -->
+    <!-- Red equilateral triangle, side 1 m. Payload lands on it -> has collision. -->
     <model name="target_triangle">
       <static>true</static>
-      <pose>-10 20 0.01 0 0 0</pose>
+      <pose>-10 20 0.003 0 0 0</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <polyline>
-              <point>0.577 0</point>
-              <point>-0.289 0.5</point>
-              <point>-0.289 -0.5</point>
-              <height>0.005</height>
-            </polyline>
-          </geometry>
-        </collision>
         <visual name="visual">
           <geometry>
             <polyline>
@@ -187,6 +213,41 @@
       </link>
     </model>
 
+    <!-- ===================== Fixed-wing targets (must be ignored) ===================== -->
+    <!-- Same colors as our targets on purpose: vision must separate them by SHAPE, not color.
+         Slightly rotated, like on a real field. Visual only (no payload goes here). -->
+    <model name="square_4x4_blue">
+      <static>true</static>
+      <pose>35 10 0.0025 0 0 0.2</pose>
+      <link name="link">
+        <visual name="visual">
+          <geometry><box><size>4 4 0.005</size></box></geometry>
+          <material>
+            <ambient>0.05 0.2 0.85 1</ambient>
+            <diffuse>0.05 0.2 0.85 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="square_2x2_red">
+      <static>true</static>
+      <pose>-25 30 0.0025 0 0 -0.3</pose>
+      <link name="link">
+        <visual name="visual">
+          <geometry><box><size>2 2 0.005</size></box></geometry>
+          <material>
+            <ambient>0.85 0.05 0.05 1</ambient>
+            <diffuse>0.85 0.05 0.05 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ===================== Drone ===================== -->
+    <!-- iris + gimbal (ballast) + fixed downward camera, see sim/models/iuav_iris -->
     <include>
       <uri>model://iuav_iris</uri>
       <pose degrees="true">0 0 0.195 0 0 90</pose>
