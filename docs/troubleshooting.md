@@ -42,3 +42,27 @@ Wait ~30 s after reboot, then arm again.
 **Cause:** In `iris_with_gimbal`, the ArduPilot plugin maps channels 9–11 to gimbal roll / pitch / yaw.
 
 **Fix:** Do not use SERVO9–11 for the payload release in simulation. Use other outputs (e.g. SERVO12–13) and set them in `sim/params/iuav_sitl.parm`.
+
+## SIM: Gazebo window does not open / stuck on "GUI requesting list of world names"
+
+**Symptom:** `gz sim` starts but the GUI window stays empty or never appears. The log keeps printing `GUI requesting list of world names. The server may be busy downloading resources.`
+
+**Cause 1 - Server still loading.** On the first run (or after a reboot) loading models and shaders can take a while.
+Fix: wait about 1 minute before assuming it is broken.
+
+**Cause 2 - Leftover Gazebo server from a previous run.** If an old `gz sim` server is still alive (closed terminal, crash, another project's world), the new GUI connects to the wrong server or gets confused. A typical log line is `Found additional publishers on /stats`.
+Check for leftover processes:
+
+    ps aux | grep -E "gz sim|parameter_bridge|arducopter" | grep -v grep
+
+Kill them:
+
+    pkill -f "gz sim"; pkill -f parameter_bridge; pkill -f arducopter
+
+Prevention: always stop the simulation with Ctrl+C in each terminal, never by just closing the terminal window.
+
+**Cause 3 - GPU / EGL issue (NVIDIA).** A log line like `libEGL warning: egl: failed to create dri2 screen` can show up. It is usually harmless, but if the GUI still does not open, run the server and the GUI separately (from the repo root):
+
+    gz sim -s -r sim/worlds/iuav_field.sdf   # terminal 1: server only
+    gz sim -g                                # terminal 2: GUI only
+
